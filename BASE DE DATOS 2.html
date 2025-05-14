@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📚 Papelería Bony - Pedido Rápido</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: linear-gradient(135deg, #fff8e1, #ffe0b2);
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 650px;
+      margin: 2rem auto;
+      background: #fff3e0;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.15);
+      border: 4px dashed #ffb74d;
+    }
+    h1 {
+      text-align: center;
+      color: #ef6c00;
+      font-size: 2.8rem;
+    }
+    p {
+      text-align: center;
+      font-weight: bold;
+      color: #5d4037;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    label {
+      font-weight: bold;
+      color: #6d4c41;
+    }
+    input, select, textarea, button {
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 2px solid #ffcc80;
+      border-radius: 10px;
+      background-color: #fffde7;
+    }
+    button {
+      background-color: #ffa726;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #fb8c00;
+    }
+    #mensajeConfirmacion {
+      color: green;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 1rem;
+    }
+    #listaPedidos {
+      margin-top: 2rem;
+      font-size: 0.95rem;
+      background-color: #fff8e1;
+      padding: 1rem;
+      border-radius: 10px;
+    }
+    .pedido-item {
+      background: #fff;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-left: 6px solid #ffb300;
+      border-radius: 10px;
+    }
+    hr {
+      border: 0;
+      height: 1px;
+      background-color: #ffe0b2;
+    }
+    .logo {
+      display: block;
+      margin: 0 auto 1rem;
+      max-width: 100px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="https://cdn-icons-png.flaticon.com/512/3405/3405809.png" alt="Logo Papelería" class="logo">
+    <h1>📚 PAPELERÍA BONY ✏️</h1>
+    <p>🎉 Haz tu pedido y recógelo en 10 minutos 🕙</p>
+    <form id="pedidoForm">
+      <label for="nombre">👧 Nombre del cliente:</label>
+      <input type="text" id="nombre" name="Nombre del cliente" required />
+
+      <label for="telefono">📞 Teléfono:</label>
+      <input type="tel" id="telefono" name="Teléfono" required />
+
+      <label for="pedido">📦 Categoría:</label>
+      <select id="pedido" name="Bony" required>
+        <option value="Oficina">🖇️ Oficina</option>
+        <option value="Bizutería">💍 Bizutería</option>
+        <option value="Regalos">🎁 Regalos</option>
+        <option value="Novedades">🆕 Novedades</option>
+        <option value="Papelería">📒 Papelería</option>
+      </select>
+
+      <label for="pago">💰 Forma de pago:</label>
+      <select id="pago" name="Forma de pago" required>
+        <option value="De contado">💵 De contado</option>
+        <option value="Tarjeta">💳 Tarjeta</option>
+        <option value="Transferencia">🏦 Transferencia</option>
+      </select>
+
+      <label for="detalle">📝 Escribe tu pedido:</label>
+      <textarea id="detalle" name="Escribe tu pedido" rows="3" required></textarea>
+
+      <button type="submit">🚀 Enviar Pedido</button>
+      <p id="mensajeConfirmacion"></p>
+    </form>
+
+    <h2>📋 Pedidos Registrados</h2>
+    <div id="listaPedidos">Cargando pedidos...</div>
+  </div>
+
+  <script>
+    const form = document.getElementById('pedidoForm');
+    const mensaje = document.getElementById('mensajeConfirmacion');
+    const listaPedidos = document.getElementById('listaPedidos');
+
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxAHraR53amVvHhplsF3S3Kw-rtRPA_C5_zktAaqIw_iYWxJQJUL_4b8J8OhagfGEBRNA/exec';
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = new FormData(form);
+
+      try {
+        const response = await fetch(scriptURL, { method: 'POST', body: data });
+        if (!response.ok) throw new Error('Error en la solicitud');
+        mensaje.textContent = '✅ Tu pedido ha sido enviado con éxito. ¡Pasa a recogerlo en 10 minutos! 🎉';
+        form.reset();
+        cargarPedidos();
+      } catch (error) {
+        mensaje.textContent = '❌ Error al enviar el pedido. Intenta nuevamente.';
+        console.error('Error al enviar el pedido:', error);
+      }
+    });
+
+    async function cargarPedidos() {
+      try {
+        const res = await fetch(scriptURL + '?read');
+        if (!res.ok) throw new Error('Respuesta no OK');
+        const data = await res.json();
+
+        listaPedidos.innerHTML = '';
+        data.reverse().forEach(pedido => {
+          const div = document.createElement('div');
+          div.classList.add('pedido-item');
+          div.innerHTML = `
+            <strong>👧 ${pedido['Nombre del cliente']}</strong> - 📞 ${pedido['Teléfono']}<br>
+            📦 Categoría: ${pedido['Bony']}<br>
+            💰 Pago: ${pedido['Forma de pago']}<br>
+            📝 Pedido: ${pedido['Escribe tu pedido']}<br>
+            📅 Fecha: ${new Date(pedido['Marca de tiempo']).toLocaleString()}<hr>
+          `;
+          listaPedidos.appendChild(div);
+        });
+      } catch (err) {
+        listaPedidos.innerHTML = '⚠️ No se pudieron cargar los pedidos.';
+        console.error('Error al cargar pedidos:', err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', cargarPedidos);
+  </script>
+</body>
+</html>
